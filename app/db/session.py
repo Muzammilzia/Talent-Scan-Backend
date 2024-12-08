@@ -1,7 +1,4 @@
-from .base import database
+from app.db.base import get_collection
 
-def get_user_collection():
-    return database.get_collection("users")  # Collection name for users
-
-def get_item_collection():
-    return database.get_collection("items")  # Collection name for items
+def get_candidates_collection():
+    return get_collection("candidate")

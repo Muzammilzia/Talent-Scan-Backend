@@ -11,19 +11,28 @@ def connect_to_database():
     try:
         # Initialize the client using the MongoDB URI, including the database name
         client = MongoClient(os.getenv("MONGODB_URI"))
-        # Get the database name directly from the URI
-        db = client.get_default_database()  # Automatically gets the database from the URI
+        # Access the specific database (replace 'talent-scan' with your database name)
+        db = client['talent-scan']
+        print(f"Database: {db}")
+        
+        # List collections in the database
+        collections = db.list_collection_names()
+        print(f"Collections: {collections}")
+        
         # Check the connection by sending a ping command
-        client.admin.command('ping')  # This sends a ping command to check the connection
+        client.admin.command('ping')
         print("Database connected successfully.")
-    except ConnectionFailure:
-        print("Failed to connect to the database.")
-        client = None  # Set client to None on failure
+    except ConnectionFailure as e:
+        print(f"Failed to connect to the database: {e}")
+        client = None
         db = None
 
 def get_collection(collection_name: str):
     """Get a specific collection from the database."""
-    return db[collection_name] if db else None
+    if db is None:  # Explicitly check if db is None
+        print("Database is not connected.")
+        return None
+    return db[collection_name]
 
 def close_connection():
     """Close the MongoDB client connection."""
@@ -31,3 +40,5 @@ def close_connection():
     if client:
         client.close()
         print("Database connection closed.")
+    else:
+        print("No active database connection to close.")
