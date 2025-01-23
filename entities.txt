@@ -1,7 +1,7 @@
 candidate:
     _id: string
-    firstName: string
-    lastName: string
+    fullName: string
+    bio: string
     address: string
     age: string
     gender: male | female
