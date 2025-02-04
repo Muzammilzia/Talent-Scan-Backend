@@ -35,6 +35,7 @@ class CandidateBase(BaseModel):
     email: EmailStr
     password: str  = Field(..., min_length=7)
     skills: Optional[List[str]] = []
+    resume: Optional[str] = ''
 
 class CandidateCreate(CandidateBase):
     qualification: Optional[List[Qualification]] = []

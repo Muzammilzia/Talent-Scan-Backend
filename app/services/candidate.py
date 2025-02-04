@@ -32,7 +32,8 @@ async def create_candidate(candidate_data: CandidateCreate) -> dict:
         "qualification": candidate_data.qualification,
         "experience": candidate_data.experience,
         "socials": candidate_data.socials,
-        "password": hashed_password
+        "password": hashed_password,
+        'resume': candidate_data.resume
     }
 
     # Insert the candidate document into MongoDB
