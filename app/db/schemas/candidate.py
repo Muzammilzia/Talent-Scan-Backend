@@ -17,8 +17,9 @@ class Experience(BaseModel):
     description: Optional[str]
 
 class Socials(BaseModel):
-    name: str  # Platform name (e.g., 'LinkedIn', 'GitHub', 'Website')
-    url: HttpUrl  # URL to the social profile
+    linkedin: Optional[HttpUrl] = None
+    facebook: Optional[HttpUrl] = None
+    gmail: Optional[EmailStr] = None
 
 class CandidateSignInRequest(BaseModel):
     email: EmailStr  # Ensures the email is a valid email format
@@ -41,7 +42,7 @@ class CandidateBase(BaseModel):
 class CandidateCreate(CandidateBase):
     qualification: Optional[List[Qualification]] = []
     experience: Optional[List[Experience]] = []
-    socials: Optional[List[Socials]] = []
+    socials: Socials
 
 class CandidateInDB(CandidateCreate):
     id: str = Field(..., alias="_id")
