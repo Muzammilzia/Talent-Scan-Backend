@@ -28,6 +28,7 @@ class CandidateBase(BaseModel):
     fullName: Optional[str] = ''
     resume: Optional[str] = ''
     bio: Optional[str] = ''
+    about: Optional[str] = ''
     address: Optional[str] = ''
     age: Optional[str] = ''
     gender: Literal["male", "female", ""] = ""
