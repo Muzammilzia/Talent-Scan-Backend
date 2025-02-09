@@ -23,7 +23,7 @@ app.add_middleware(
 @app.middleware("http")
 async def jwt_auth_middleware(request: Request, call_next):
     # Skip specific routes (e.g., login, signup)
-    if request.url.path in ["/api/v1/candidate/sign-in", "/api/v1/candidate/sign-up"]:
+    if request.url.path in ["/api/v1/candidate/sign-in", "/api/v1/candidate/sign-up", "/api/v1/company/sign-in", "/api/v1/company/sign-up"]:
         return await call_next(request)
 
     # skip if request is cors preflight request
