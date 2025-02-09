@@ -42,7 +42,7 @@ class CandidateBase(BaseModel):
 class CandidateCreate(CandidateBase):
     qualification: Optional[List[Qualification]] = []
     experience: Optional[List[Experience]] = []
-    socials: Socials
+    socials: Optional[Socials] = {}
 
 class CandidateInDB(CandidateCreate):
     id: str = Field(..., alias="_id")
