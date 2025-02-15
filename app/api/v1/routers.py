@@ -2,9 +2,11 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import candidate
 from app.api.v1.endpoints import company
+from app.api.v1.endpoints import job_post
 
 api_router = APIRouter()
 
 # Include routes
-api_router.include_router(candidate.router, prefix="/candidate", tags=["candidate"])
-api_router.include_router(company.router, prefix="/company", tags=["company"])
+api_router.include_router(candidate.router, prefix="/candidate", tags=["Candidate"])
+api_router.include_router(company.router, prefix="/company", tags=["Company"])
+api_router.include_router(job_post.router, prefix="/job-post", tags=["Job Post"])

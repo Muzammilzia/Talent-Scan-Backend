@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "test-secret-key")
 ALGORITHM = "HS256"
 
-def create_jwt_token(data: dict, expires_delta: timedelta = timedelta(hours=1)) -> str:
+def create_jwt_token(data: dict, expires_delta: timedelta = timedelta(days=30)) -> str:
     """Creates a JWT token."""
     to_encode = data.copy()
     expire = datetime.now() + expires_delta
@@ -16,6 +16,7 @@ def create_jwt_token(data: dict, expires_delta: timedelta = timedelta(hours=1)) 
 def verify_jwt_token(token: str) -> dict:
     """Verifies and decodes a JWT token."""
     try:
+        print(token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:

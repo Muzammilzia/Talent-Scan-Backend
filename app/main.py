@@ -1,6 +1,6 @@
 from typing import Union
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, HTTPException
 from app.api.v1.routers import api_router
 from fastapi.middleware.cors import CORSMiddleware
 from .db.base import connect_to_database
@@ -22,28 +22,51 @@ app.add_middleware(
 
 @app.middleware("http")
 async def jwt_auth_middleware(request: Request, call_next):
-    # Skip specific routes (e.g., login, signup)
-    if request.url.path in ["/api/v1/candidate/sign-in", "/api/v1/candidate/sign-up", "/api/v1/company/sign-in", "/api/v1/company/sign-up"]:
+    try:
+        # Skip specific routes (e.g., login, signup)
+        if request.url.path in [
+            "/api/v1/candidate/sign-in", "/api/v1/candidate/sign-up",
+            "/api/v1/company/sign-in", "/api/v1/company/sign-up"
+        ]:
+            return await call_next(request)
+
+        # Skip if request is CORS preflight request
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
+        # Get authorization header
+        authorization: str = request.headers.get("authorization") or request.headers.get("Authorization")
+        
+        if not authorization or "Bearer " not in authorization:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authorization header missing or malformed"
+            )
+
+        # Extract token
+        token = authorization.split(" ")[1]
+        
+        # Verify token
+        payload = verify_jwt_token(token)  # Ensure this function handles exceptions internally
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token"
+            )
+
+        # Attach user payload to request state
+        request.state.user = payload  
+
         return await call_next(request)
 
-    # skip if request is cors preflight request
-    if request.method == "OPTIONS":
-        return await call_next(request)
+    except HTTPException as http_exc:
+        return JSONResponse(content={"detail": http_exc.detail}, status_code=http_exc.status_code)
 
-    # get authorization header
-    authorization: str = request.headers.get("authorization") or request.headers.get("Authorization")
-    
-    if not authorization:
+    except Exception as e:
         return JSONResponse(
-            {"detail": "Authorization header missing"},
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": "Internal server error", "error": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
-    token = authorization.split(" ")[1]
-    payload = verify_jwt_token(token)
-    request.state.user = payload  # Attach the user payload to the request state
-    
-    return await call_next(request)
 
 connect_to_database()
 

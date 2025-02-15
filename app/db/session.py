@@ -5,3 +5,6 @@ def get_candidates_collection():
 
 def get_company_collection():
     return get_collection("company")
+
+def get_job_post_collection():
+    return get_collection("jobPost")
