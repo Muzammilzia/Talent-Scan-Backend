@@ -37,7 +37,7 @@ async def sign_up(company: CompanyCreate):
 async def company_me(request: Request):
     try:
         company = await get_company_by_id(request.state.user["id"])
-        return {"message": "success", "Company": company}
+        return {"message": "success", "company": company}
     except Exception as e:
         print('error',e)
         raise HTTPException(status_code=e.status_code, detail=str(e))
