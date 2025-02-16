@@ -6,10 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from .db.base import connect_to_database
 from starlette.responses import JSONResponse
 from app.utils.jwt import verify_jwt_token
+from fastapi.staticfiles import StaticFiles
+import os
 
 load_dotenv()
 
 app = FastAPI()
+
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # Allow CORS from anywhere
 app.add_middleware(
@@ -23,8 +30,12 @@ app.add_middleware(
 @app.middleware("http")
 async def jwt_auth_middleware(request: Request, call_next):
     try:
+        path = request.url.path
+
+        if path.startswith("/uploads"):
+            return await call_next(request)
         # Skip specific routes (e.g., login, signup)
-        if request.url.path in [
+        if path in [
             "/api/v1/candidate/sign-in", "/api/v1/candidate/sign-up",
             "/api/v1/company/sign-in", "/api/v1/company/sign-up"
         ]:

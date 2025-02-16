@@ -19,7 +19,7 @@ class Experience(BaseModel):
 class Socials(BaseModel):
     linkedin: Optional[HttpUrl] = None
     facebook: Optional[HttpUrl] = None
-    gmail: Optional[EmailStr] = None
+    github: Optional[EmailStr] = None
 
 class CandidateSignInRequest(BaseModel):
     email: EmailStr  # Ensures the email is a valid email format

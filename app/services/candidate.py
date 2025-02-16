@@ -80,3 +80,31 @@ async def get_candidate_by_id(id: str) -> dict:
     candidate = collection.find_one({"_id": object_id}, {"password": 0})
     candidate["_id"] = str(candidate["_id"])
     return candidate
+
+async def update_candidate(candidate_id: str, update_data: dict) -> dict:
+    collection = get_candidates_collection()
+    
+    # Convert candidate_id to ObjectId
+    try:
+        object_id = ObjectId(candidate_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid candidate ID")
+    
+    # Remove any empty or None values to prevent overwriting existing fields with null
+    update_data = {k: v for k, v in update_data.items() if v is not None and v != ""}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields provided for update")
+    
+    # Update the candidate record
+    result = collection.update_one({"_id": object_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    # Retrieve the updated candidate data
+    updated_candidate = collection.find_one({"_id": object_id}, {"password": 0})
+    if updated_candidate:
+        updated_candidate["_id"] = str(updated_candidate["_id"])
+    
+    return updated_candidate
