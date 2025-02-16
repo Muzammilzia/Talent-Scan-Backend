@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Literal, List, Optional
 from enum import Enum
+from datetime import datetime
 
-class JobType(Enum):
+class JobType(str, Enum):
     FULL_TIME = "full time"
     PART_TIME = "part time"
     ONSITE = "onsite"
@@ -18,8 +19,10 @@ class JobPostBase(BaseModel):
     maximumSalary: Optional[str] = ''
     payingCurrency: Optional[str] = ''
     description: Optional[str] = ''
-    jobType: Optional[List[JobType]] = None
+    jobType: Optional[JobType] = None
     isAcceptingApplications: Optional[bool] = True
+    createdAt: Optional[datetime] = None
+    updatedAt: Optional[datetime] = None
 
 class JobPostCreate(JobPostBase):
     pass

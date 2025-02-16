@@ -15,7 +15,6 @@ class Job_Post_Routes(str, Enum):
 @router.post(Job_Post_Routes.CREATE.value)
 async def create(job: JobPostCreate):
     try:
-        print(job)
         result = await create_job(job)
         return {"message": "Job created successfully", "data": result}
     except Exception as e:
