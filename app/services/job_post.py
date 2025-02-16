@@ -5,7 +5,7 @@ from typing import List, Optional
 from enum import Enum
 from bson import ObjectId
 from app.db.schemas.job_post import JobPostCreate, JobType
-from app.db.session import get_job_post_collection
+from app.db.session import get_job_post_collection, get_company_collection
 from datetime import datetime
 
 async def create_job(job: JobPostCreate):
@@ -37,14 +37,47 @@ async def edit_job(id: str, job: JobPostCreate):
 
 def list_jobs():
     try:
-        collection = get_job_post_collection()
-        jobs = list(collection.find())
-        print(jobs, 'in list jobs')
+        job_collection = get_job_post_collection()
+        company_collection = get_company_collection()
+
+        jobs = list(job_collection.find())
         for job in jobs:
             job["_id"] = str(job["_id"])
-        return { "jobs": jobs }
+
+            # Fetch the company details
+            company = company_collection.find_one({"_id": ObjectId(job["company"])}, {"password": 0})  # Exclude password
+            if company:
+                company["_id"] = str(company["_id"])  # Convert ObjectId to string
+                job["company"] = company  # Replace company ID with company object
+
+        return {"jobs": jobs}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# recommended list for candidate
+def recommended_list_jobs(candidate_id):
+    try:
+        print(candidate_id)
+
+        job_collection = get_job_post_collection()
+        company_collection = get_company_collection()
+
+        jobs = list(job_collection.find())
+        for job in jobs:
+            job["_id"] = str(job["_id"])
+
+            # Fetch the company details
+            company = company_collection.find_one({"_id": ObjectId(job["company"])}, {"password": 0})
+            if company:
+                company["_id"] = str(company["_id"])
+                job["company"] = company
+
+        return {"jobs": jobs}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 def list_jobs_by_company(companyId: str):
     try:

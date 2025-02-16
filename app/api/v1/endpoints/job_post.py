@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from app.db.schemas.job_post import JobPostCreate, JobPostInDB
-from app.services.job_post import create_job, edit_job, get_job_by_id, list_jobs_by_company, list_jobs
+from app.services.job_post import create_job, edit_job, get_job_by_id, list_jobs_by_company, list_jobs, recommended_list_jobs
 from enum import Enum
 
 router = APIRouter()
@@ -8,6 +8,7 @@ router = APIRouter()
 class Job_Post_Routes(str, Enum):
     CREATE = '/create'
     LIST = '/list'
+    RECOMMENDED_LIST = '/recommended_list'
     GET_BY_ID = '/{id}'
     EDIT = '/edit'
     LIST_BY_COMPANY_ID = '/list-by-company-id/{companyId}'
@@ -24,6 +25,14 @@ async def create(job: JobPostCreate):
 def list():
     try:
         return list_jobs()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(Job_Post_Routes.RECOMMENDED_LIST.value)
+def Recommended_list(request: Request):
+    try:
+        print(request.state.user["id"])
+        return recommended_list_jobs(request.state.user["id"])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
