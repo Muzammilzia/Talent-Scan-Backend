@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Request, status
-from app.db.schemas.company import CompanyCreate, CompanySignInRequest
-from app.services.company import create_company, sign_in_company, get_company_by_id
+from app.db.schemas.company import CompanyCreate, CompanySignInRequest, CompanyEditRequest
+from app.services.company import create_company, sign_in_company, get_company_by_id, company_update
 from enum import Enum
 from app.utils.upload_file import upload_file
 import time
@@ -13,6 +13,7 @@ class Company_Routes(str, Enum):
     SIGN_UP = '/sign-up'
     GET_COMPANY_BY_ID = '/{id}'
     COMPANY_ME = '/me'
+    COMPANY_PROFILE_EDIT = '/edit'
 
 
 @router.post(Company_Routes.SIGN_IN.value)
@@ -38,6 +39,15 @@ async def company_me(request: Request):
     try:
         company = await get_company_by_id(request.state.user["id"])
         return {"message": "success", "company": company}
+    except Exception as e:
+        print('error',e)
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+
+@router.post(Company_Routes.COMPANY_PROFILE_EDIT.value)
+async def company_edit_profile(request: Request, company: CompanyEditRequest):
+    try:
+        result = await company_update(request.state.user["id"], company.dict())
+        return {"message": "success", "company": result}
     except Exception as e:
         print('error',e)
         raise HTTPException(status_code=e.status_code, detail=str(e))

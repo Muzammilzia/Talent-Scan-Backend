@@ -75,3 +75,33 @@ async def get_company_by_id(id: str) -> dict:
     company = collection.find_one({"_id": object_id}, {"password": 0})
     company["_id"] = str(company["_id"])
     return company
+
+async def company_update(company_id: str, update_data: dict) -> dict:
+    collection = get_company_collection()
+    try:
+        object_id = ObjectId(company_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid company ID: {e}")
+
+    # Remove keys with empty string or None values
+    update_data = {k: v for k, v in update_data.items() if v not in [None, ""]}
+
+    if "socials" in update_data and isinstance(update_data["socials"], dict):
+        update_data["socials"] = {
+            k: str(v) for k, v in update_data["socials"].items() if v not in [None, ""]
+        }
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields provided for update.")
+
+    result = collection.find_one_and_update(
+        {"_id": object_id},
+        {"$set": update_data},
+        return_document=True
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Company not found.")
+
+    result["_id"] = str(result["_id"])
+    return result
