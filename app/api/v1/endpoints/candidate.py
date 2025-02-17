@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Request, status
 from app.db.schemas.candidate import CandidateCreate, CandidateSignInRequest, Socials, Qualification, Experience
-from app.services.candidate import create_candidate, sign_in_candidate, get_candidate_by_id, update_candidate
+from app.services.candidate import create_candidate, sign_in_candidate, get_candidate_by_id, update_candidate, get_all_candidates
 from enum import Enum
 from app.utils.upload_file import upload_file
 from typing import Literal, List, Optional
@@ -16,6 +16,7 @@ class Candidate_Routes(str, Enum):
     GET_CANDIDATE_BY_ID = '/{id}'
     CANDIDATE_ME = '/me'
     PROFILE_EDIT = '/edit'
+    LIST_CANDIDATES = '/list'
 
 
 @router.post(Candidate_Routes.SIGN_IN.value)
@@ -118,3 +119,22 @@ async def edit_profile(
     except Exception as e:
         print("error", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(Candidate_Routes.LIST_CANDIDATES.value)
+async def candidate_list():
+    try:
+        candidates = await get_all_candidates()
+        return {"message": "success", "candidates": candidates}
+    except Exception as e:
+        print('error',e)
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+
+@router.get(Candidate_Routes.GET_CANDIDATE_BY_ID.value)
+async def candidate_get_by_id(id: str):
+    try:
+        candidate = await get_candidate_by_id(id)
+        return {"message": "success", "candidate": candidate}
+    except Exception as e:
+        print('error',e)
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+

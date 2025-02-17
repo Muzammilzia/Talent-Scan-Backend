@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Request, status
 from app.db.schemas.company import CompanyCreate, CompanySignInRequest, CompanyEditRequest
-from app.services.company import create_company, sign_in_company, get_company_by_id, company_update
+from app.services.company import create_company, sign_in_company, get_company_by_id, company_update, get_all_companies
 from enum import Enum
 from app.utils.upload_file import upload_file
 import time
@@ -14,6 +14,7 @@ class Company_Routes(str, Enum):
     GET_COMPANY_BY_ID = '/{id}'
     COMPANY_ME = '/me'
     COMPANY_PROFILE_EDIT = '/edit'
+    COMPANY_LIST = '/list'
 
 
 @router.post(Company_Routes.SIGN_IN.value)
@@ -48,6 +49,24 @@ async def company_edit_profile(request: Request, company: CompanyEditRequest):
     try:
         result = await company_update(request.state.user["id"], company.dict())
         return {"message": "success", "company": result}
+    except Exception as e:
+        print('error',e)
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+    
+@router.get(Company_Routes.COMPANY_LIST.value)
+async def company_list():
+    try:
+        companies = await get_all_companies()
+        return {"message": "success", "companies": companies}
+    except Exception as e:
+        print('error',e)
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+    
+@router.get(Company_Routes.GET_COMPANY_BY_ID.value)
+async def company_me(id: str):
+    try:
+        company = await get_company_by_id(id)
+        return {"message": "success", "company": company}
     except Exception as e:
         print('error',e)
         raise HTTPException(status_code=e.status_code, detail=str(e))

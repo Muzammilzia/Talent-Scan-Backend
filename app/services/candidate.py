@@ -108,3 +108,10 @@ async def update_candidate(candidate_id: str, update_data: dict) -> dict:
         updated_candidate["_id"] = str(updated_candidate["_id"])
     
     return updated_candidate
+
+async def get_all_candidates() -> list:
+    collection = get_candidates_collection()
+    candidates = collection.find({}, {"password": 0})  # Exclude password field
+
+    # Convert ObjectId to string and return a list of candidates
+    return [{**candidate, "_id": str(candidate["_id"])} for candidate in candidates]

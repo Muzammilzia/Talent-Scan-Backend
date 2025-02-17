@@ -105,3 +105,11 @@ async def company_update(company_id: str, update_data: dict) -> dict:
 
     result["_id"] = str(result["_id"])
     return result
+
+
+async def get_all_companies() -> list:
+    collection = get_company_collection()
+    companies = collection.find({}, {"password": 0})  # Exclude password field
+
+    # Convert ObjectId to string and return a list of candidates
+    return [{**company, "_id": str(company["_id"])} for company in companies]
