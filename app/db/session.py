@@ -8,3 +8,6 @@ def get_company_collection():
 
 def get_job_post_collection():
     return get_collection("jobPost")
+
+def get_job_Application_collection():
+    return get_collection("jobApplication")
