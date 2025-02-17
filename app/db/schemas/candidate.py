@@ -1,21 +1,30 @@
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from typing import Literal, List, Optional
-from datetime import date
+from datetime import date, datetime
 
 class Qualification(BaseModel):
-    institute: str
-    program: str
-    startDate: date
-    endDate: date
-    description: Optional[str]
+    institute: Optional[str] = ""
+    program: Optional[str] = ""
+    startDate: Optional[datetime] = None
+    endDate: Optional[datetime] = None
+    description: Optional[str] = ""
+
+    # Optional: Override the dict method to remove None values before serialization
+    def dict(self, *args, **kwargs):
+        result = super().dict(*args, **kwargs)
+        return {key: value for key, value in result.items() if value is not None}
 
 class Experience(BaseModel):
-    company_or_organization: str = Field(..., alias="company/organization")
-    role: str
-    startDate: date
-    endDate: date
-    description: Optional[str]
+    company_or_organization: Optional[str] = ""
+    role: Optional[str] = ""
+    startDate: Optional[datetime] = None
+    endDate: Optional[datetime] = None
+    description: Optional[str] = ""
 
+    # Optional: Override the dict method to remove None values before serialization
+    def dict(self, *args, **kwargs):
+        result = super().dict(*args, **kwargs)
+        return {key: value for key, value in result.items() if value is not None}
 class Socials(BaseModel):
     linkedin: Optional[HttpUrl] = None
     facebook: Optional[HttpUrl] = None

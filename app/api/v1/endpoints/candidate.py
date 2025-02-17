@@ -3,9 +3,12 @@ from app.db.schemas.candidate import CandidateCreate, CandidateSignInRequest, So
 from app.services.candidate import create_candidate, sign_in_candidate, get_candidate_by_id, update_candidate, get_all_candidates
 from enum import Enum
 from app.utils.upload_file import upload_file
+from app.utils.parsing import process_resumes
 from typing import Literal, List, Optional
 import json
 import time
+from datetime import datetime, date
+from pydantic import ValidationError
 import os
 
 router = APIRouter()
@@ -28,29 +31,87 @@ async def sign_in(candidate: CandidateSignInRequest):
         print('error',e)
         raise HTTPException(status_code=e.status_code, detail=str(e.detail))
 
+
+
 @router.post(Candidate_Routes.SIGN_UP.value)
 async def sign_up(
     fullName: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    resume: UploadFile = File(...)
+    resume: UploadFile = File(...),
 ):
     try:
-        print(resume.filename)
+        # Upload the resume file
         file_location = await upload_file(resume)
 
-        candidate = CandidateCreate(
-            fullName=fullName, 
-            email=email, 
-            password=password, 
-            resume=file_location
-        )
-        result = await create_candidate(candidate)
-        return {"message": "Candidate created successfully", "candidate": result}
+        # Process the resume to extract data
+        result = process_resumes([file_location])
+        print(result["results"][0]["data"])  # This prints the extracted data
+
+        # Extract data from the result
+        data = result["results"][0]["data"]
+
+        # Gender handling: ensure it’s only "male", "female", or ""
+        gender = data.get("gender", "").strip().lower()
+        if gender not in ["male", "female"]:
+            gender = ""
+
+        # Function to parse date strings to datetime.date
+        def parse_date(date_str: str) -> Optional[datetime]:
+            try:
+                # You can adjust the format here if necessary
+                return datetime.strptime(date_str, "%m/%Y") if date_str else None
+            except ValueError:
+                return None
+
+        # Convert experience and qualification dates
+        experience_data = [
+            {
+                "company_or_organization": exp.get("company", "").strip(),
+                "role": exp.get("title", "").strip(),
+                "description": exp.get("description", "")
+            }
+            for exp in data.get("experience", [])
+        ]
+
+        qualification_data = [
+            {
+                "institute": qual.get("institution", "").strip(),
+                "program": qual.get("degree", "").strip(),
+                "description": qual.get("description", "")
+            }
+            for qual in data.get("qualification", [])
+        ]
+
+        # Create the candidate object
+        candidate = {
+            "fullName":fullName,
+            "about": data.get("bio", ""),
+            "age": data.get("age", ""),
+            "email":email,
+            "password":password,
+            "skills":data.get("skills", []),
+            "resume":file_location,
+            "gender":gender,
+            "experience":experience_data,
+            "qualification":qualification_data
+        }
+
+        print(candidate)
+
+        # Call the database function to create the candidate
+        # result = await create_candidate(candidate)
+
+        # Return the response
+        return {"message": "Candidate created successfully", "candidate": "result"}
+
+    except ValidationError as e:
+        print('Validation error:', e.errors())
+        raise HTTPException(status_code=400, detail="Validation error: " + str(e.errors()))
     except Exception as e:
-        print('error',e)
+        print('Error:', e)
         raise HTTPException(status_code=500, detail=str(e))
-    
+ 
 @router.get(Candidate_Routes.CANDIDATE_ME.value)
 async def candidate_me(request: Request):
     try:

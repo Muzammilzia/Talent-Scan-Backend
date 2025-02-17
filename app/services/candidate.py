@@ -8,7 +8,7 @@ from app.utils.jwt import create_jwt_token
 
 async def create_candidate(candidate_data: CandidateCreate) -> dict:
     collection = get_candidates_collection()
-    candidate = collection.find_one({ "email": candidate_data.email })
+    candidate = collection.find_one({ "email": candidate_data["email"] })
 
     if candidate:
         raise HTTPException(
@@ -17,23 +17,23 @@ async def create_candidate(candidate_data: CandidateCreate) -> dict:
         )
 
     # Hash the password before storing it in the database
-    hashed_password = hash_password(candidate_data.password)
+    hashed_password = hash_password(candidate_data["password"])
 
     # Candidate data to insert into MongoDB
     candidate_document = {
-        "fullName": candidate_data.fullName,
-        "bio": candidate_data.bio,
-        "address": candidate_data.address,
-        "age": candidate_data.age,
-        "gender": candidate_data.gender,
-        "phone": candidate_data.phone,
-        "email": candidate_data.email,
-        "skills": candidate_data.skills,
-        "qualification": candidate_data.qualification,
-        "experience": candidate_data.experience,
-        "socials": candidate_data.socials,
+        "fullName": candidate_data["fullName"],
+        "bio": candidate_data.get("bio", ""),  
+        "address": candidate_data.get("address", ""),
+        "age": candidate_data.get("age", ""),
+        "gender": candidate_data.get("gender", ""),
+        "phone": candidate_data.get("phone", ""), 
+        "email": candidate_data["email"],
+        "skills": candidate_data.get("skills", []),
+        "qualification": candidate_data.get("qualification", []),
+        "experience": candidate_data.get("experience", []),
+        "socials": candidate_data.get("socials", {}),
         "password": hashed_password,
-        'resume': candidate_data.resume
+        "resume": candidate_data["resume"]
     }
 
     # Insert the candidate document into MongoDB
